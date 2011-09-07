@@ -2,6 +2,8 @@
 
 # Naming convention:
 # $title-YEAR-MO-DA-#.jpg
+# title can contain letters, numbers and underscore
+
 
 use strict;
 use warnings;
@@ -20,6 +22,8 @@ my %named_files;
 my @unnamed_files;
 my %titles;
 
+# GO THROUGH FILES AND COUNT THEM, PUT IN ARRAYS
+
 foreach(@files)
 {
     if(($_ eq ".") || ($_ eq "..")) {
@@ -30,7 +34,7 @@ foreach(@files)
     if($_ =~ /.jpg$/i) {$jpg_flag = 1;}
     if(!$jpg_flag) { next; }
 
-    if($_ =~ /^([a-zA-Z0-9]+)-(\d{4})-(\d{2})-(\d{2})(-\d+)?.jpg$/i) {
+    if($_ =~ /^([a-zA-Z0-9_]+)-(\d{4})-(\d{2})-(\d{2})(-\d+)?.jpg$/i) {
         if(exists($named_files{"$2$3$4"})) {
             $named_files{"$2$3$4"}++;
         }
@@ -60,8 +64,10 @@ print "\nUnnamed Files:\n";
 foreach(@unnamed_files) {
     print "$_\n";
 }
+print "\n";
 
 # Check titles
+# EXPAND THIS TO WORK FOR MULTIPLE TITLES FOUND AND SELECT WHICH TITLE TO USE
 my $titles_count = keys(%titles);
 my $title;
 
@@ -89,7 +95,9 @@ else {
 }
 
 chomp($title);
-print "Using title: $title\n";
+print "\nUsing title: $title\n";
+
+# WE DON'T DO ANYTHING WITH THIS DECISION, WE RENAME OLD FILES REGARDLESS
 
 print "Rename previous files? (y/n): ";
 my $rename_old_answer = <>;
@@ -119,9 +127,32 @@ foreach(@files)
     # Skip file if it doesn't have a jpg extension
     if(!$jpg_flag) { next; }
    
-    # Check if name date matches the photo's date taken
-    if($_ =~ /^([a-zA-Z0-9]+)-(\d{4})-(\d{2})-(\d{2})(-\d+)?.jpg$/i) {
-        next;
+    # Check if it is already formatted properly
+    if($_ =~ /^([a-zA-Z0-9_]+)-(\d{4})-(\d{2})-(\d{2})-?(\d+)?.jpg$/i) {
+        if($1 eq $title) {
+            next;
+        }
+        else {
+            # STILL WORK TO DO HERE
+            my $new_name;
+
+            if($5 eq "") {
+                $new_name = sprintf("%s-%04d-%02d-%02d.jpg", $title, $2, $3, $4);
+            }
+            else {
+                $new_name = sprintf("%s-%04d-%02d-%02d-%03d.jpg", $title, $2, $3, $4, $5);
+            }
+
+            if(! -f $new_name) {
+                rename($_, $new_name);
+                print "Renaming $_ to $new_name.\n";
+            }
+            else {
+                print "Error: Unable to rename $_: $new_name already exists.\n";
+            }
+            
+        }
+
     }
 
     else {
