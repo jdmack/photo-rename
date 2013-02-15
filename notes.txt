@@ -1,0 +1,5 @@
+if (! -f $dest) { rename ($src,$dest); }
+
+
+my $filename = sprintf( "%s-%04d-%02d-%02d-%03d.jpg", $basename, $year, $month, $day, $serial) ;
+
